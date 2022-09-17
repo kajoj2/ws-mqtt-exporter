@@ -1,0 +1,14 @@
+LAYOUT:
+
+/v1/data/__DEVICE_ID__/pressure/
+
+/v1/data/DEVELOPMENT_DEVICE_001/pressure/
+
+
+
+
+
+
+
+
+
