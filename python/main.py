@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 from questdb.ingress import Sender
 from datetime import datetime
 import json
+import os
 
 MQTT_TOPIC = [("/v1/data/+/+/", 0)]
 
@@ -19,7 +20,7 @@ def on_message(client, userdata, msg):
     string = msg.topic.split("/")
     json_payload = json.loads(msg.payload)
     dataType = string[4]
-    with Sender('10.128.0.50', 9009) as sender:
+    with Sender(quest_db_ip, 9009) as sender:
         sender.row(
             'sensors_'+dataType,
             symbols={'device': json_payload['device'] , 'sensor': json_payload['sensor'] },
@@ -30,11 +31,15 @@ def on_message(client, userdata, msg):
 #clientdb = InfluxDBClient("10.128.0.50", 9009, '', '', 'test')
 #clientdb.create_database('test')
 
+mqtt_broker_ip = os.getenv('MQTT_BROKER_IP')
+quest_db_ip = os.getenv('QUEST_DB_IP')
+
+
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
-client.connect("10.128.0.50", 1883, 60)
+client.connect(mqtt_broker_ip", 1883, 60)
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.
