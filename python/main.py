@@ -20,13 +20,13 @@ def on_message(client, userdata, msg):
     string = msg.topic.split("/")
     json_payload = json.loads(msg.payload)
     dataType = string[4]
-    with Sender(quest_db_ip, 9009) as sender:
-        sender.row(
-            'sensors_'+dataType,
-            symbols={'device': json_payload['device'] , 'sensor': json_payload['sensor'] },
-            columns={dataType: json_payload[dataType]},
-            at=datetime.fromtimestamp(json_payload['time']) )
-        sender.flush()
+    
+    sender.row(
+        'sensors_'+dataType,
+        symbols={'device': json_payload['device'] , 'sensor': json_payload['sensor'] },
+        columns={dataType: json_payload[dataType]},
+        at=datetime.fromtimestamp(json_payload['time']))
+    sender.flush()
 
 #clientdb = InfluxDBClient("10.128.0.50", 9009, '', '', 'test')
 #clientdb.create_database('test')
@@ -34,16 +34,16 @@ def on_message(client, userdata, msg):
 mqtt_broker_ip = os.getenv('MQTT_BROKER_IP')
 quest_db_ip = os.getenv('QUEST_DB_IP')
 
+with Sender(quest_db_ip, 9009) as sender:
+    client = mqtt.Client()
+    client.on_connect = on_connect
+    client.on_message = on_message
 
-client = mqtt.Client()
-client.on_connect = on_connect
-client.on_message = on_message
+    client.connect(mqtt_broker_ip, 1883, 60)
 
-client.connect(mqtt_broker_ip, 1883, 60)
-
-# Blocking call that processes network traffic, dispatches callbacks and
-# handles reconnecting.
-# Other loop*() functions are available that give a threaded interface and a
-# manual interface.
-client.loop_forever()
+    # Blocking call that processes network traffic, dispatches callbacks and
+    # handles reconnecting.
+    # Other loop*() functions are available that give a threaded interface and a
+    # manual interface.
+    client.loop_forever()
 
